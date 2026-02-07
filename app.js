@@ -70,8 +70,11 @@ const EventBus = (() => {
 const ConfigManager = (() => {
     const STORAGE_KEY = 'kline_sentience_config';
 
+    // 内置默认 API Key（用户可在模态框中修改）
+    const BUILTIN_API_KEY = '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';
+
     const defaults = {
-        apiKey: '',
+        apiKey: BUILTIN_API_KEY,
         apiEndpoint: 'https://api.anthropic.com/v1/messages',
         model: 'claude-sonnet-4-20250514',
         maxImageSize: 10 * 1024 * 1024, // 10MB
