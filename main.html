@@ -277,6 +277,30 @@
             return num.toLocaleString('zh-CN');
         }
 
+        // 数字滚动动画
+        function animateNumber(element, targetValue, duration = 1500) {
+            const startValue = 0;
+            const startTime = performance.now();
+
+            function easeOutQuart(t) {
+                return 1 - Math.pow(1 - t, 4);
+            }
+
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easedProgress = easeOutQuart(progress);
+                const currentValue = Math.floor(startValue + (targetValue - startValue) * easedProgress);
+                element.textContent = formatNumber(currentValue);
+
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
         function updateDashboard() {
             const history = getTradeHistory();
             const latestEquity = getLatestEquity();
@@ -289,8 +313,9 @@
             console.log('Latest Equity:', latestEquity);
             console.log('History:', history);
 
-            // 更新总资产
-            document.getElementById('total-equity').textContent = formatNumber(latestEquity);
+            // 更新总资产（带滚动动画）
+            const equityEl = document.getElementById('total-equity');
+            animateNumber(equityEl, latestEquity, 1200);
 
             // 更新今日盈亏
             const todayPnlEl = document.getElementById('today-pnl');
@@ -360,10 +385,44 @@
 
             const option = {
                 backgroundColor: 'transparent',
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: 'rgba(26, 26, 26, 0.95)',
+                    borderColor: '#D4AF37',
+                    borderWidth: 1,
+                    textStyle: {
+                        color: '#fff',
+                        fontSize: 12
+                    },
+                    formatter: function (params) {
+                        const dataIndex = params[0].dataIndex;
+                        const equity = params[0].value;
+                        const dayLabel = params[0].name;
+
+                        if (dataIndex === 0) {
+                            return `<div style="padding: 4px 8px;">
+                                <div style="font-weight: bold; color: #D4AF37;">${dayLabel}</div>
+                                <div>资产: ${formatNumber(equity)}</div>
+                                <div style="color: #888;">初始资产</div>
+                            </div>`;
+                        }
+
+                        const record = history[dataIndex - 1];
+                        const pnlColor = record.pnl >= 0 ? '#00FF88' : '#FF4D4D';
+                        const sign = record.pnl >= 0 ? '+' : '';
+
+                        return `<div style="padding: 4px 8px;">
+                            <div style="font-weight: bold; color: #D4AF37;">${dayLabel}</div>
+                            <div>资产: ${formatNumber(equity)}</div>
+                            <div style="color: ${pnlColor};">盈亏: ${sign}${formatNumber(Math.round(record.pnl))} (${sign}${record.pnl_percent.toFixed(2)}%)</div>
+                            <div>回撤: -${record.drawdown.toFixed(2)}%</div>
+                        </div>`;
+                    }
+                },
                 grid: {
                     left: 50,
                     right: 15,
-                    top: 15,
+                    top: 20,
                     bottom: 25
                 },
                 xAxis: {
@@ -371,9 +430,10 @@
                     data: xData,
                     axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
                     axisLabel: {
-                        color: 'rgba(255,255,255,0.3)',
+                        color: 'rgba(255,255,255,0.5)',
                         fontSize: 9,
-                        interval: Math.max(0, Math.floor(xData.length / 5) - 1)
+                        interval: 0,
+                        rotate: xData.length > 7 ? 45 : 0
                     },
                     axisTick: { show: false }
                 },
@@ -397,14 +457,25 @@
                     data: yData,
                     smooth: true,
                     symbol: 'circle',
-                    symbolSize: 6,
-                    showSymbol: yData.length <= 10,
+                    symbolSize: 8,
+                    showSymbol: true,
                     lineStyle: {
                         color: '#00FF88',
                         width: 2.5
                     },
                     itemStyle: {
-                        color: '#00FF88'
+                        color: '#00FF88',
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            color: '#D4AF37',
+                            borderColor: '#fff',
+                            borderWidth: 3,
+                            shadowColor: 'rgba(212, 175, 55, 0.5)',
+                            shadowBlur: 10
+                        }
                     },
                     areaStyle: {
                         color: {
