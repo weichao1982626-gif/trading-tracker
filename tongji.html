@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html class="dark" lang="zh-CN">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>25->50 计划统计分析页</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#D4AF37",
+                        "background-light": "#f8f5f5",
+                        "background-dark": "#1A0A0A",
+                        "aurora-green": "#00FF88",
+                        "carmine-red": "#FF4D4D",
+                        "gold-accent": "#D4AF37",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        body {
+            font-family: 'Manrope', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 100dvh;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body class="bg-background-dark text-white font-display overflow-hidden">
+    <div
+        class="relative flex h-screen w-full max-w-[440px] mx-auto flex-col overflow-hidden border-x border-white/5 shadow-2xl bg-background-dark">
+        <header class="pt-14 px-6 pb-4">
+            <h1 class="text-[36px] font-extrabold leading-tight tracking-tight text-white flex items-center gap-2">
+                <span class="text-white">统计</span><span class="text-white/90">分析</span>
+                <span class="h-2 w-2 rounded-full bg-primary mt-3"></span>
+            </h1>
+        </header>
+
+        <!-- 汇总统计卡片 -->
+        <div class="px-6 pb-4">
+            <div class="grid grid-cols-3 gap-3">
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-3 text-center">
+                    <p class="text-white/40 text-[9px] font-bold tracking-widest uppercase mb-1">总收益</p>
+                    <p id="total-pnl" class="text-aurora-green text-lg font-bold">+0</p>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-3 text-center">
+                    <p class="text-white/40 text-[9px] font-bold tracking-widest uppercase mb-1">胜率</p>
+                    <p id="win-rate" class="text-primary text-lg font-bold">0%</p>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-3 text-center">
+                    <p class="text-white/40 text-[9px] font-bold tracking-widest uppercase mb-1">最大回撤</p>
+                    <p id="max-drawdown" class="text-carmine-red text-lg font-bold">0%</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-6 py-2 bg-background-dark/80 backdrop-blur-md border-y border-white/10">
+            <div class="grid grid-cols-5 text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] text-center">
+                <div class="text-left">序号</div>
+                <div class="text-left">日期</div>
+                <div class="text-right">盈亏额</div>
+                <div class="text-right">涨跌幅</div>
+                <div class="text-right">回撤</div>
+            </div>
+        </div>
+        <main id="history-list" class="flex-1 overflow-y-auto custom-scrollbar px-6">
+            <div class="divide-y divide-white/5">
+                <!-- 历史记录将通过 JS 动态渲染 -->
+            </div>
+            <div class="h-36"></div>
+        </main>
+        <footer
+            class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-background-dark via-background-dark/95 to-transparent">
+            <button
+                class="w-full bg-primary hover:bg-yellow-600 text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-primary/20"
+                onclick="window.location.href='main.html'">
+                <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+                返回看板
+            </button>
+        </footer>
+        <div class="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/20 rounded-full"></div>
+    </div>
+
+    <script>
+        // ==================== 核心数据架构 ====================
+        const INITIAL_EQUITY = 250000;
+        const STORAGE_KEY = 'trade_history';
+
+        function getTradeHistory() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+
+        function formatNumber(num) {
+            return num.toLocaleString('zh-CN');
+        }
+
+        function formatDate(dateStr) {
+            // 将 2026-02-08 转换为 2026/02/08
+            return dateStr.replace(/-/g, '/');
+        }
+
+        // ==================== 渲染历史记录 ====================
+        function renderHistory() {
+            const history = getTradeHistory();
+            const listContainer = document.querySelector('#history-list .divide-y');
+
+            // 清空现有内容
+            listContainer.innerHTML = '';
+
+            if (history.length === 0) {
+                listContainer.innerHTML = `
+            <div class="py-10 text-center">
+                <p class="text-white/30 text-sm">暂无交易记录</p>
+                <p class="text-white/20 text-xs mt-2">点击"收工结算"开始记录</p>
+            </div>
+        `;
+                return;
+            }
+
+            // 按日期倒序排列
+            const sortedHistory = [...history].reverse();
+
+            // 渲染每一行
+            sortedHistory.forEach((record, index) => {
+                const displayIndex = (history.length - index).toString().padStart(2, '0');
+                const isProfit = record.pnl >= 0;
+                const pnlColor = isProfit ? 'text-aurora-green' : 'text-carmine-red';
+                const sign = isProfit ? '+' : '';
+                const drawdownColor = record.drawdown > 0 ? 'text-carmine-red' : 'text-white/50';
+
+                const row = document.createElement('div');
+                row.className = 'grid grid-cols-5 py-2.5 items-center';
+                row.innerHTML = `
+            <div class="text-white/40 text-[11px] font-medium">${displayIndex}</div>
+            <div class="text-white/80 text-[11px] font-medium">${formatDate(record.date)}</div>
+            <div class="${pnlColor} text-xs font-bold text-right">${sign}${formatNumber(Math.round(record.pnl))}</div>
+            <div class="${pnlColor} text-[11px] font-bold text-right">${sign}${record.pnl_percent.toFixed(2)}%</div>
+            <div class="${drawdownColor} text-[11px] font-medium text-right">-${record.drawdown.toFixed(2)}%</div>
+        `;
+                listContainer.appendChild(row);
+            });
+        }
+
+        // ==================== 计算汇总统计 ====================
+        function calculateStats() {
+            const history = getTradeHistory();
+
+            if (history.length === 0) {
+                document.getElementById('total-pnl').textContent = '+0';
+                document.getElementById('win-rate').textContent = '0%';
+                document.getElementById('max-drawdown').textContent = '0%';
+                return;
+            }
+
+            // 总收益
+            const latestEquity = history[history.length - 1].equity;
+            const totalPnl = latestEquity - INITIAL_EQUITY;
+            const totalPnlEl = document.getElementById('total-pnl');
+            const isProfit = totalPnl >= 0;
+            totalPnlEl.textContent = `${isProfit ? '+' : ''}${formatNumber(Math.round(totalPnl))}`;
+            totalPnlEl.className = `${isProfit ? 'text-aurora-green' : 'text-carmine-red'} text-lg font-bold`;
+
+            // 胜率
+            const winDays = history.filter(h => h.pnl > 0).length;
+            const winRate = (winDays / history.length * 100).toFixed(1);
+            document.getElementById('win-rate').textContent = `${winRate}%`;
+
+            // 最大回撤
+            const maxDrawdown = Math.max(...history.map(h => h.drawdown));
+            document.getElementById('max-drawdown').textContent = `${maxDrawdown.toFixed(2)}%`;
+        }
+
+        // ==================== 初始化 ====================
+        document.addEventListener('DOMContentLoaded', function () {
+            renderHistory();
+            calculateStats();
+        });
+    </script>
+
+</body>
+
+</html>
