@@ -65,9 +65,8 @@
     <div
         class="relative flex h-screen w-full max-w-[440px] mx-auto flex-col overflow-hidden border-x border-white/5 shadow-2xl bg-background-dark">
         <header class="pt-14 px-6 pb-4">
-            <h1 class="text-[36px] font-extrabold leading-tight tracking-tight text-white flex items-center gap-2">
-                <span class="text-white">统计</span><span class="text-white/90">分析</span>
-                <span class="h-2 w-2 rounded-full bg-primary mt-3"></span>
+            <h1 class="text-[36px] font-extrabold leading-tight tracking-tight text-white">
+                统计分析
             </h1>
         </header>
 
@@ -90,11 +89,12 @@
         </div>
 
         <div class="px-6 py-2 bg-background-dark/80 backdrop-blur-md border-y border-white/10">
-            <div class="grid grid-cols-5 text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] text-center">
+            <div class="grid grid-cols-6 text-[10px] font-bold text-white/30 uppercase tracking-[0.1em] text-center">
                 <div class="text-left">序号</div>
                 <div class="text-left">日期</div>
                 <div class="text-right">盈亏额</div>
                 <div class="text-right">涨跌幅</div>
+                <div class="text-right">当天资产</div>
                 <div class="text-right">回撤</div>
             </div>
         </div>
@@ -165,12 +165,13 @@
                 const drawdownColor = record.drawdown > 0 ? 'text-carmine-red' : 'text-white/50';
 
                 const row = document.createElement('div');
-                row.className = 'grid grid-cols-5 py-2.5 items-center';
+                row.className = 'grid grid-cols-6 py-2.5 items-center';
                 row.innerHTML = `
             <div class="text-white/40 text-[11px] font-medium">${displayIndex}</div>
             <div class="text-white/80 text-[11px] font-medium">${formatDate(record.date)}</div>
             <div class="${pnlColor} text-xs font-bold text-right">${sign}${formatNumber(Math.round(record.pnl))}</div>
             <div class="${pnlColor} text-[11px] font-bold text-right">${sign}${record.pnl_percent.toFixed(2)}%</div>
+            <div class="text-white/80 text-[11px] font-medium text-right">${formatNumber(record.equity)}</div>
             <div class="${drawdownColor} text-[11px] font-medium text-right">-${record.drawdown.toFixed(2)}%</div>
         `;
                 listContainer.appendChild(row);
