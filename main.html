@@ -44,7 +44,8 @@
         body {
             font-family: 'Noto Sans SC', 'Manrope', sans-serif;
             -webkit-tap-highlight-color: transparent;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
             background-color: #121212;
             transition: background-color 0.5s ease;
         }
@@ -64,7 +65,7 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
         .main-container {
-            height: 100dvh;
+            min-height: 100dvh;
             display: flex;
             flex-direction: column;
         }
@@ -78,14 +79,12 @@
         }
     </style>
     <style>
-        body {
-            min-height: max(884px, 100dvh);
-        }
+        /* 移动端适配 */
     </style>
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white">
-    <div class="main-container relative w-full max-w-md mx-auto border-x border-white/5 overflow-hidden">
+    <div class="main-container relative w-full max-w-md mx-auto border-x border-white/5">
         <div class="flex items-center px-4 py-4 justify-between shrink-0">
             <div class="w-10"></div>
             <h2
