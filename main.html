@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
-    <title>25->50 计划看板 对称大字指标版</title>
+    <title>20->50 计划看板 对称大字指标版</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <link
@@ -89,14 +89,14 @@
             <div class="w-10"></div>
             <h2
                 class="text-slate-900 dark:text-white text-[10px] font-bold leading-tight tracking-[0.25em] flex-1 text-center font-display uppercase">
-                25→50 计划看板</h2>
+                20→50 计划看板</h2>
             <div class="w-10"></div>
         </div>
         <div class="px-4 py-4 text-center shrink-0">
             <p class="text-slate-500 dark:text-[#c3b998] text-[11px] font-semibold tracking-widest mb-1 uppercase">当前总资产
             </p>
             <h1 id="total-equity"
-                class="text-primary tracking-tight text-5xl font-extrabold leading-tight gold-glow font-display">250,000
+                class="text-primary tracking-tight text-5xl font-extrabold leading-tight gold-glow font-display">200,000
             </h1>
             <div class="flex justify-center gap-8 mt-3">
                 <div class="flex flex-col items-center">
@@ -133,7 +133,7 @@
                     style="width: 0%;"></div>
             </div>
             <div class="flex justify-between">
-                <p class="text-slate-400 dark:text-white/40 text-[10px] font-medium">起点: 250,000</p>
+                <p class="text-slate-400 dark:text-white/40 text-[10px] font-medium">起点: 200,000</p>
                 <p class="text-slate-400 dark:text-white/40 text-[10px] font-medium">目标: 500,000</p>
             </div>
         </div>
@@ -191,7 +191,7 @@
 
     <script>
         // ==================== 核心数据架构 ====================
-        const INITIAL_EQUITY = 250000;
+        const INITIAL_EQUITY = 200000;
         const TARGET_EQUITY = 500000;
         const STORAGE_KEY = 'trade_history';
 
